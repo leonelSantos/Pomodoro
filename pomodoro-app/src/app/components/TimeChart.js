@@ -1,17 +1,31 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { theme } from 'antd';
 import { useTheme } from '../context/ThemeContext';
 
 export default function TimeChart({ data, dataKey, xKey }) {
-  const { theme } = useTheme();
+  const { theme: currentTheme } = useTheme();
+  const { token } = theme.useToken();
 
-  // Custom tooltip component
+  // Custom tooltip component styled with Ant Design
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-md">
-          <p className="text-sm text-gray-700 dark:text-gray-300">{`${label}: ${payload[0].value} minutes`}</p>
+        <div style={{ 
+          background: token.colorBgContainer,
+          border: `1px solid ${token.colorBorderSecondary}`,
+          padding: token.paddingXS,
+          borderRadius: token.borderRadiusLG,
+          boxShadow: token.boxShadowSecondary
+        }}>
+          <p style={{ 
+            color: token.colorTextSecondary,
+            margin: 0,
+            fontSize: token.fontSizeSM
+          }}>
+            {`${label}: ${payload[0].value} minutes`}
+          </p>
         </div>
       );
     }
@@ -27,25 +41,25 @@ export default function TimeChart({ data, dataKey, xKey }) {
         <CartesianGrid
           strokeDasharray="3 3"
           vertical={false}
-          stroke={theme === 'dark' ? '#374151' : '#e5e7eb'}
+          stroke={currentTheme === 'dark' ? token.colorBorderSecondary : token.colorBorderSecondary}
         />
         <XAxis
           dataKey={xKey}
-          tick={{ fill: theme === 'dark' ? '#9ca3af' : '#4b5563' }}
-          axisLine={{ stroke: theme === 'dark' ? '#4b5563' : '#d1d5db' }}
+          tick={{ fill: token.colorTextSecondary }}
+          axisLine={{ stroke: token.colorBorderSecondary }}
           tickLine={false}
-          fontSize={12}
+          fontSize={token.fontSizeSM}
         />
         <YAxis
-          tick={{ fill: theme === 'dark' ? '#9ca3af' : '#4b5563' }}
-          axisLine={{ stroke: theme === 'dark' ? '#4b5563' : '#d1d5db' }}
+          tick={{ fill: token.colorTextSecondary }}
+          axisLine={{ stroke: token.colorBorderSecondary }}
           tickLine={false}
-          fontSize={12}
+          fontSize={token.fontSizeSM}
         />
         <Tooltip content={<CustomTooltip />} />
         <Bar
           dataKey={dataKey}
-          fill={theme === 'dark' ? '#3b82f6' : '#60a5fa'}
+          fill={token.colorPrimary}
           radius={[4, 4, 0, 0]}
         />
       </BarChart>

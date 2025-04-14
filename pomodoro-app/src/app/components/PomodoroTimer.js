@@ -1,8 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { Card, Button, Progress, Input, Form, Typography, Space, Tag } from 'antd';
+import { PlayCircleOutlined, PauseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { usePomodoroContext } from '../context/PomodoroContext';
 import TimePicker from './TimePicker';
+
+const { Title, Text } = Typography;
 
 export default function PomodoroTimer() {
   const { state, dispatch } = usePomodoroContext();
@@ -25,6 +29,8 @@ export default function PomodoroTimer() {
 
   const handleStart = () => {
     if (!currentTask) {
+      // Use Ant Design message component instead of alert
+      // Since we don't have the full app context, we'll use alert for now
       alert('Please enter a task before starting the timer.');
       return;
     }
@@ -39,117 +45,102 @@ export default function PomodoroTimer() {
     dispatch({ type: 'RESET_TIMER' });
   };
 
-  const handleTaskSubmit = (e) => {
-    e.preventDefault();
-    if (taskInput.trim()) {
-      dispatch({ type: 'SET_CURRENT_TASK', payload: taskInput.trim() });
+  const handleTaskSubmit = (values) => {
+    if (values.task.trim()) {
+      dispatch({ type: 'SET_CURRENT_TASK', payload: values.task.trim() });
       setTaskInput('');
     }
   };
 
-  // Circle progress styling
-  const circumference = 2 * Math.PI * 45; // 45 is the radius
-  const strokeDashoffset = circumference - (calculateProgress() / 100) * circumference;
-
   return (
-    <div className="flex flex-col items-center justify-center p-6 rounded-lg transition-all">
-      <h2 className="text-2xl font-bold mb-6 dark:text-white text-gray-800">
-        {mode === 'work' ? 'Work Session' : 'Break Time'}
-      </h2>
-
+    <Card 
+      title={
+        <Title level={3} style={{ margin: 0 }}>
+          {mode === 'work' ? 'Work Session' : 'Break Time'}
+        </Title>
+      }
+      bordered={false} 
+      style={{ width: '100%', maxWidth: 500, margin: '0 auto' }}
+    >
       {!currentTask && (
-        <form onSubmit={handleTaskSubmit} className="w-full max-w-md mb-6">
-          <div className="flex items-center">
-            <input
-              type="text"
-              value={taskInput}
-              onChange={(e) => setTaskInput(e.target.value)}
+        <Form
+          name="task-form"
+          onFinish={handleTaskSubmit}
+          layout="vertical"
+          style={{ marginBottom: 24 }}
+        >
+          <Form.Item
+            name="task"
+            rules={[{ required: true, message: 'Please enter a task' }]}
+          >
+            <Input.Search
               placeholder="What are you working on?"
-              className="w-full p-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              enterButton="Set"
+              size="large"
+              onSearch={(value) => {
+                if (value.trim()) {
+                  dispatch({ type: 'SET_CURRENT_TASK', payload: value.trim() });
+                }
+              }}
             />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-500 text-white rounded-r hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              Set
-            </button>
-          </div>
-        </form>
+          </Form.Item>
+        </Form>
       )}
 
       {currentTask && (
-        <div className="mb-4 text-xl dark:text-gray-300 text-gray-700">
-          Task: {currentTask}
+        <div style={{ marginBottom: 24, textAlign: 'center' }}>
+          <Tag color={mode === 'work' ? 'processing' : 'success'} style={{ fontSize: 16, padding: '5px 10px' }}>
+            {currentTask}
+          </Tag>
         </div>
       )}
 
-      <div className="relative w-64 h-64 mb-6">
-        <svg className="w-full h-full" viewBox="0 0 100 100">
-          {/* Background circle */}
-          <circle
-            cx="50"
-            cy="50"
-            r="45"
-            fill="none"
-            stroke={mode === 'work' ? '#4b5563' : '#9ca3af'}
-            strokeWidth="2"
-            className="dark:opacity-20 opacity-10"
-          />
-          {/* Progress circle */}
-          <circle
-            cx="50"
-            cy="50"
-            r="45"
-            fill="none"
-            stroke={mode === 'work' ? '#ef4444' : '#10b981'}
-            strokeWidth="2"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            transform="rotate(-90 50 50)"
-            className="transition-all duration-1000 ease-linear"
-          />
-          {/* Timer text */}
-          <text
-            x="50"
-            y="55"
-            textAnchor="middle"
-            fontSize="16"
-            fontWeight="bold"
-            fill="currentColor"
-            className="dark:text-white text-gray-800"
-          >
-            {formatTime(currentTime)}
-          </text>
-        </svg>
+      <div style={{ textAlign: 'center', marginBottom: 30 }}>
+        <Progress
+          type="dashboard"
+          percent={calculateProgress()}
+          format={() => <span style={{ fontSize: 36 }}>{formatTime(currentTime)}</span>}
+          status={mode === 'work' ? 'active' : 'success'}
+          size={250}
+          strokeColor={mode === 'work' ? { '0%': '#108ee9', '100%': '#87d068' } : '#52c41a'}
+        />
       </div>
 
-      <div className="flex space-x-4 mb-8">
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 30 }}>
         {!isRunning ? (
-          <button
+          <Button
+            type="primary"
+            icon={<PlayCircleOutlined />}
+            size="large"
             onClick={handleStart}
-            className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
             disabled={!currentTask}
+            style={{ width: 110 }}
           >
             Start
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
+            type="primary"
+            danger
+            icon={<PauseCircleOutlined />}
+            size="large"
             onClick={handlePause}
-            className="px-6 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition"
+            style={{ width: 110 }}
           >
             Pause
-          </button>
+          </Button>
         )}
-        <button
+        <Button
+          icon={<ReloadOutlined />}
+          size="large"
           onClick={handleReset}
-          className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+          style={{ width: 110 }}
         >
           Reset
-        </button>
+        </Button>
       </div>
 
       <TimePicker />
-    </div>
+    </Card>
   );
 }

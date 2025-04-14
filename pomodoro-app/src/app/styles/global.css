@@ -1,3 +1,7 @@
+/* Import Ant Design styles */
+@import 'antd/dist/reset.css';
+
+/* Keep the Tailwind base styles for compatibility */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,21 +11,10 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-}
-
-* {
-  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 .dark {
   color-scheme: dark;
-}
-
-/* Add smooth transition for theme changes */
-.transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
 }

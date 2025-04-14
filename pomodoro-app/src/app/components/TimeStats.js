@@ -1,8 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Card, Typography, Row, Col, Progress, Statistic, Divider } from 'antd';
+import { ClockCircleOutlined, AimOutlined } from '@ant-design/icons';
 import { usePomodoroContext } from '../context/PomodoroContext';
 import TimeChart from './TimeChart';
+
+const { Title, Text } = Typography;
 
 export default function TimeStats() {
   const { state } = usePomodoroContext();
@@ -65,63 +69,68 @@ export default function TimeStats() {
     setDailyStats(hourlyStats);
   }, [sessions]);
 
+  // Calculate percentage of 4-hour goal
+  const goalPercentage = Math.min((totalTime / (4 * 60)) * 100, 100);
+
   return (
-    <div className="w-full max-w-4xl p-6 rounded-lg dark:bg-gray-800 bg-white transition-all">
-      <h2 className="text-2xl font-bold mb-6 dark:text-white text-gray-800">Daily Progress</h2>
-      
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-medium dark:text-gray-300 text-gray-700">Today's Focus Time</h3>
-          <span className="text-2xl font-bold dark:text-white text-gray-800">
-            {Math.floor(totalTime / 60)}h {totalTime % 60}m
-          </span>
-        </div>
-        
-        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-blue-500 rounded-full" 
-            style={{ width: `${Math.min((totalTime / (8 * 60)) * 100, 100)}%` }}
-          ></div>
-        </div>
-        <div className="text-xs text-right mt-1 dark:text-gray-400 text-gray-500">
-          {totalTime} minutes / 8 hour goal
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
-          <h3 className="text-lg font-medium mb-4 dark:text-gray-300 text-gray-700">Time by Hour</h3>
-          <div className="h-64">
-            <TimeChart data={dailyStats} dataKey="minutes" xKey="hour" />
-          </div>
-        </div>
-        
-        <div>
-          <h3 className="text-lg font-medium mb-4 dark:text-gray-300 text-gray-700">Time by Task</h3>
-          {taskBreakdown.length > 0 ? (
-            <div className="space-y-4">
-              {taskBreakdown.map(task => (
-                <div key={task.name}>
-                  <div className="flex justify-between mb-1">
-                    <span className="dark:text-gray-300 text-gray-700">{task.name}</span>
-                    <span className="dark:text-gray-300 text-gray-700">
-                      {Math.floor(task.value / 60)}h {task.value % 60}m
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-green-500 rounded-full" 
-                      style={{ width: `${(task.value / totalTime) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
+    <Card 
+      title={<Title level={3} style={{ margin: 0 }}>Daily Progress</Title>}
+      style={{ width: '100%' }}
+    >
+      <Row gutter={[24, 24]}>
+        <Col span={24}>
+          <Card>
+            <Statistic
+              title="Today's Focus Time"
+              value={`${Math.floor(totalTime / 60)}h ${totalTime % 60}m`}
+              prefix={<ClockCircleOutlined />}
+            />
+            <div style={{ marginTop: 16 }}>
+              <Progress 
+                percent={goalPercentage} 
+                status={goalPercentage >= 100 ? "success" : "active"}
+                strokeColor={{
+                  from: '#108ee9',
+                  to: '#87d068',
+                }}
+              />
+              <Text type="secondary">{totalTime} minutes / 4 hour goal</Text>
             </div>
-          ) : (
-            <p className="dark:text-gray-400 text-gray-500">No tasks completed today</p>
-          )}
-        </div>
-      </div>
-    </div>
+          </Card>
+        </Col>
+        
+        <Col xs={24} md={12}>
+          <Card title="Time by Hour">
+            <div style={{ height: 300 }}>
+              <TimeChart data={dailyStats} dataKey="minutes" xKey="hour" />
+            </div>
+          </Card>
+        </Col>
+        
+        <Col xs={24} md={12}>
+          <Card title="Time by Task">
+            {taskBreakdown.length > 0 ? (
+              <div>
+                {taskBreakdown.map(task => (
+                  <div key={task.name} style={{ marginBottom: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <Text strong>{task.name}</Text>
+                      <Text>{Math.floor(task.value / 60)}h {task.value % 60}m</Text>
+                    </div>
+                    <Progress 
+                      percent={(task.value / totalTime) * 100} 
+                      showInfo={false}
+                      strokeColor="#52c41a"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Text type="secondary">No tasks completed today</Text>
+            )}
+          </Card>
+        </Col>
+      </Row>
+    </Card>
   );
 }

@@ -1,10 +1,13 @@
 'use client';
 
+import { Typography } from 'antd';
 import PomodoroTimer from './components/PomodoroTimer';
+
+const { Title } = Typography;
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center max-w-2xl w-full">
+    <div style={{ maxWidth: '800px', width: '100%', margin: '0 auto' }}>
       <PomodoroTimer />
     </div>
   );

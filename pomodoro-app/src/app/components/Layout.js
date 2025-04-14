@@ -2,55 +2,74 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import ThemeToggle from './ThemeToggle';
+import { Layout as AntLayout, Menu, Typography, ConfigProvider, theme } from 'antd';
+import { ClockCircleOutlined, BarChartOutlined } from '@ant-design/icons';
+import { useTheme } from '../context/ThemeContext';
 
-export default function Layout({ children, title = 'Pomodoro App' }) {
+const { Header, Content, Footer } = AntLayout;
+const { Title } = Typography;
+
+export default function Layout({ children }) {
   const pathname = usePathname();
+  const { theme: currentTheme, toggleTheme } = useTheme();
   
+  // Menu items
+  const items = [
+    {
+      key: '/',
+      icon: <ClockCircleOutlined />,
+      label: <Link href="/">Timer</Link>,
+    },
+    {
+      key: '/stats',
+      icon: <BarChartOutlined />,
+      label: <Link href="/stats">Stats</Link>,
+    }
+  ];
+
+  // Selected key based on current pathname
+  const selectedKey = pathname === '/' ? '/' : '/stats';
+
   return (
-    <div className="min-h-screen dark:bg-gray-900 bg-gray-50 transition-colors duration-300">
-      <header className="border-b dark:border-gray-800 border-gray-200">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold dark:text-white text-gray-800">FocusFlow</h1>
-          
-          <div className="flex items-center space-x-6">
-            <nav className="flex space-x-4">
-              <Link 
-                href="/"
-                className={`px-2 py-1 rounded transition ${
-                  pathname === '/' 
-                    ? 'font-medium dark:text-white text-gray-900' 
-                    : 'dark:text-gray-400 text-gray-600 hover:dark:text-gray-300 hover:text-gray-900'
-                }`}
-              >
-                Timer
-              </Link>
-              <Link 
-                href="/stats"
-                className={`px-2 py-1 rounded transition ${
-                  pathname === '/stats' 
-                    ? 'font-medium dark:text-white text-gray-900' 
-                    : 'dark:text-gray-400 text-gray-600 hover:dark:text-gray-300 hover:text-gray-900'
-                }`}
-              >
-                Stats
-              </Link>
-            </nav>
-            
-            <ThemeToggle />
+    <ConfigProvider
+      theme={{
+        algorithm: currentTheme === 'dark' 
+          ? theme.darkAlgorithm 
+          : theme.defaultAlgorithm,
+      }}
+    >
+      <AntLayout style={{ minHeight: '100vh' }}>
+        <Header style={{ 
+          position: 'sticky', 
+          top: 0, 
+          zIndex: 1, 
+          width: '100%', 
+          display: 'flex', 
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Title level={3} style={{ margin: 0, color: '#fff' }}>
+              FocusFlow
+            </Title>
+            <Menu
+              theme="dark"
+              mode="horizontal"
+              selectedKeys={[selectedKey]}
+              items={items}
+              style={{ marginLeft: 30, flex: 1, minWidth: 0 }}
+            />
           </div>
-        </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-8 flex flex-col items-center">
-        {children}
-      </main>
-      
-      <footer className="border-t dark:border-gray-800 border-gray-200 mt-auto">
-        <div className="container mx-auto px-4 py-4 text-center text-sm dark:text-gray-400 text-gray-600">
-          FocusFlow &copy; {new Date().getFullYear()} - A minimal pomodoro timer app
-        </div>
-      </footer>
-    </div>
+        </Header>
+        <Content style={{ padding: '24px 50px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '1200px', width: '100%' }}>
+            {children}
+          </div>
+        </Content>
+        <Footer style={{ textAlign: 'center' }}>
+          FocusFlow ©{new Date().getFullYear()} - A minimal pomodoro timer app
+        </Footer>
+      </AntLayout>
+    </ConfigProvider>
   );
 }
